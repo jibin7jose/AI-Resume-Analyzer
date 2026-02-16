@@ -60,6 +60,13 @@
     margin-bottom: 1.5rem;
     color: var(--text-muted);
     transition: all 0.3s ease;
+    overflow: hidden;
+}
+
+.uploaderLogo {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
 }
 
 .dropzone:hover .iconWrapper {

@@ -6,7 +6,7 @@ import Uploader from './Uploader';
 import ResultsDashboard from './ResultsDashboard';
 import { extractTextFromPDF } from '@/utils/pdfParser';
 import { analyzeResume, AnalysisResult } from '@/utils/gemini';
-import { KeyRound, ArrowLeft, Cpu, Sun, Moon } from 'lucide-react';
+import { KeyRound, ArrowLeft, Cpu, Sun, Moon, Sparkles } from 'lucide-react';
 import styles from './ResumeAnalyzer.module.css';
 
 export default function ResumeAnalyzer() {
@@ -62,11 +62,20 @@ export default function ResumeAnalyzer() {
 
     return (
         <div className={styles.container}>
+            {/* Background Decorative Blobs */}
+            <div className="fixed inset-0 overflow-hidden -z-10 pointer-events-none opacity-50">
+                <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] rounded-full bg-indigo-500/10 blur-[100px] animate-pulse" />
+                <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] rounded-full bg-rose-500/10 blur-[100px] animate-pulse" />
+            </div>
+
             {/* Navigation / Header */}
             <header className={styles.header}>
                 <div className={styles.titleContainer}>
-                    <h1 className={styles.title}>AI Resume</h1>
-                    <p className={styles.subtitle}>ATS Analysis</p>
+                    <div className="flex items-center gap-4 mb-2">
+                        <img src="/logo.jpg" alt="AI Resume Logo" className={styles.logo} />
+                        <h1 className={styles.title}>AI Resume</h1>
+                    </div>
+                    <p className={styles.subtitle}>Smart ATS Analysis & Career Insights</p>
                 </div>
 
                 <div className={styles.actions}>
@@ -90,7 +99,7 @@ export default function ResumeAnalyzer() {
                     {process.env.NEXT_PUBLIC_GEMINI_API_KEY && !analysisResult && (
                         <div className={styles.systemBadge}>
                             <Cpu size={14} />
-                            AI Intelligence Active
+                            AI Engine Ready
                         </div>
                     )}
                 </div>
@@ -104,7 +113,7 @@ export default function ResumeAnalyzer() {
                             onClick={() => setAnalysisResult(null)}
                             className={styles.backButton}
                         >
-                            <ArrowLeft size={18} /> Run New Deep Scan
+                            <ArrowLeft size={18} /> New Deep Scan
                         </button>
                         <ResultsDashboard data={analysisResult} />
                     </div>

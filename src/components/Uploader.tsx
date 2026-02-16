@@ -75,7 +75,7 @@ export default function Uploader({ onFileProcess, isProcessing, error }: Uploade
                         ) : fileName ? (
                             <FileText className="w-10 h-10" />
                         ) : (
-                            <UploadCloud className="w-10 h-10" />
+                            <img src="/logo.jpg" alt="Logo" className={styles.uploaderLogo} />
                         )}
                     </div>
 
