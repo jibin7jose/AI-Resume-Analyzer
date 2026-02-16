@@ -65,8 +65,8 @@ export default function ResumeAnalyzer() {
             {/* Navigation / Header */}
             <header className={styles.header}>
                 <div className={styles.titleContainer}>
-                    <h1 className={styles.title}>AI Resume Pro</h1>
-                    <p className={styles.subtitle}>Enterprise-grade ATS Analysis</p>
+                    <h1 className={styles.title}>AI Resume</h1>
+                    <p className={styles.subtitle}>ATS Analysis</p>
                 </div>
 
                 <div className={styles.actions}>
