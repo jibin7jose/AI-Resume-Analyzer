@@ -56,7 +56,7 @@ export default function ResultsDashboard({ data }: DashboardProps) {
             <div className={`${styles.card} ${styles.colSpan2}`}>
                 <div className={styles.cardHeader}>
                     <div className={styles.cardTitle}>
-                        <img src="/logo.jpg" alt="Logo" className="w-8 h-8 rounded-lg mr-2 border border-white/10" />
+                        <UserCheck className={`${styles.icon} ${styles.iconPurple}`} />
                         Career Fit Profile
                     </div>
                 </div>

@@ -52,11 +52,12 @@ export default function ResumeAnalyzer() {
 
         try {
             const text = await extractTextFromPDF(file);
+            console.log("PDF parsed, starting AI analysis...");
             const result = await analyzeResume(text, targetApiKey, jobDescription);
             setAnalysisResult(result);
         } catch (err: any) {
-            console.error(err);
-            setError(err.message || "An unexpected error occurred during analysis.");
+            console.error("Analysis Failed:", err);
+            setError(err.message || "Analysis failed. Please check your API key and connection.");
         } finally {
             setIsAnalyzing(false);
         }

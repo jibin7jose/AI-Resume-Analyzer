@@ -32,6 +32,13 @@ export interface AnalysisResult {
 }
 
 export async function analyzeResume(text: string, apiKey: string, jobDescription?: string): Promise<AnalysisResult> {
+  // Use the most stable models first for production/hosting environments
+  const modelNames = [
+    "gemini-1.5-flash",
+    "gemini-1.5-pro",
+    "gemini-1.5-flash-latest"
+  ];
+
   const prompt = `
     Analyze the following resume text as if you were an expert ATS (Applicant Tracking System) and Career Coach.
     
@@ -65,29 +72,29 @@ export async function analyzeResume(text: string, apiKey: string, jobDescription
     }
   `;
 
-  const models = [
-    "gemini-2.5-flash",
-    "gemini-flash-latest",
-    "gemini-2.0-flash",
-    "gemini-1.5-flash"
-  ];
-
   const genAI = new GoogleGenerativeAI(apiKey);
 
-  for (const modelName of models) {
+  for (const modelName of modelNames) {
     try {
-      console.log(`Trying SDK with ${modelName}...`);
       const model = genAI.getGenerativeModel({ model: modelName });
       const result = await model.generateContent(prompt);
       const res = await result.response;
       const jsonText = res.text().replace(/^```json\n|\n```$/g, "").trim();
-      return JSON.parse(jsonText);
+
+      // Basic validation that we got JSON
+      if (jsonText.startsWith('{') && jsonText.endsWith('}')) {
+        return JSON.parse(jsonText);
+      }
     } catch (e: any) {
-      console.warn(`SDK ${modelName} failed:`, e.message);
+      console.warn(`Model ${modelName} failed:`, e.message);
+      // If unauthorized, don't keep trying other models
+      if (e.message?.includes('API_KEY_INVALID') || e.message?.includes('403')) {
+        throw new Error("Invalid API Key. Please check your Gemini API key.");
+      }
     }
   }
 
-  // Fallback REST API
+  // Fallback REST API with a hardcoded stable endpoint
   try {
     const restUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
     const restRes = await fetch(restUrl, {
@@ -103,10 +110,12 @@ export async function analyzeResume(text: string, apiKey: string, jobDescription
       const textOutput = data.candidates[0].content.parts[0].text;
       const cleaned = textOutput.replace(/^```json\n|\n```$/g, "").trim();
       return JSON.parse(cleaned);
+    } else {
+      const errData = await restRes.json();
+      throw new Error(errData.error?.message || "API request failed");
     }
   } catch (e: any) {
-    console.error("Direct REST call failed:", e.message);
+    console.error("Analysis Error:", e.message);
+    throw new Error(e.message || "Connection failed. Please check your internet and API key.");
   }
-
-  throw new Error("Analysis failed. Please check your connection or try again later.");
 }
