@@ -1,36 +1,41 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 🤖 AI Resume Analyzer
 
-## Getting Started
+A premium AI-powered tool that analyzes resumes using Google Gemini AI, providing ATS scores, job recommendations, and interview prep.
 
-First, run the development server:
+## 🚀 Setup Instructions
 
+### 1. Security First (Important!)
+To prevent your API keys from being leaked to GitHub:
+- I have added `.env.local` to the `.gitignore` file. 
+- **NEVER** commit your real API key to the repository.
+- Use the `.env.example` file as a template.
+
+### 2. Configure API Key
+1. Create a file named `.env.local` in the root folder.
+2. Add your Google Gemini API Key:
+   ```env
+   NEXT_PUBLIC_GEMINI_API_KEY=your_actual_key_here
+   ```
+   *(Get your key at [Google AI Studio](https://aistudio.google.com/app/apikey))*
+
+### 3. Run Locally
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
+Open [http://localhost:3000](http://localhost:3000) to see the app.
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## ✨ Features
+- **ATS Analysis**: Deep scan for missing skills and formatting issues.
+- **JD Matching**: Match your resume against a specific job description for a fit score.
+- **Interview Prep**: Get custom behavioral and technical questions based on your profile.
+- **Project Ideas**: AI-generated suggestions to boost your portfolio.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## 🔒 Deployment (Safe Way)
+When deploying to Vercel or Netlify:
+1. Do **not** upload the `.env.local` file.
+2. Go to the dashboard of your hosting provider.
+3. Add `NEXT_PUBLIC_GEMINI_API_KEY` as an **Environment Variable** in their settings.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+---
+Developed by **Jibin Jose**
