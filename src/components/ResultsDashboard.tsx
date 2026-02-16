@@ -1,6 +1,4 @@
-
-"use client";
-
+import { useState, useEffect } from 'react';
 import { AnalysisResult } from '@/utils/gemini';
 import {
     Radar, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis,
@@ -9,7 +7,7 @@ import {
 import {
     AlertCircle, Lightbulb, UserCheck, Activity,
     Search, FileWarning, CheckCircle2, FlaskConical,
-    GraduationCap, HelpCircle, MessageCircle, Target
+    GraduationCap, MessageCircle, Target, Star
 } from 'lucide-react';
 import styles from './ResultsDashboard.module.css';
 
@@ -18,6 +16,12 @@ interface DashboardProps {
 }
 
 export default function ResultsDashboard({ data }: DashboardProps) {
+    const [mounted, setMounted] = useState(false);
+
+    useEffect(() => {
+        setMounted(true);
+    }, []);
+
     const {
         matchPercentage, categoryScores, missingSkills, suggestions,
         detectedRole, jobRecommendations, projectIdeas,
@@ -29,6 +33,8 @@ export default function ResultsDashboard({ data }: DashboardProps) {
         { name: 'Match', value: matchPercentage },
         { name: 'Gap', value: 100 - matchPercentage }
     ];
+
+    if (!mounted) return null;
 
     return (
         <div className={styles.dashboard}>
@@ -248,22 +254,3 @@ export default function ResultsDashboard({ data }: DashboardProps) {
     );
 }
 
-function Star({ className, ...props }: any) {
-    return (
-        <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="24"
-            height="24"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            className={className}
-            {...props}
-        >
-            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
-        </svg>
-    );
-}

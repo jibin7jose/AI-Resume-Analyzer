@@ -31,91 +31,70 @@ export interface AnalysisResult {
   jdAnalysis?: string;
 }
 
+/**
+ * Robust resume analysis using Google's Gemini AI.
+ * Updated for Feb 2026 compatibility: Uses Gemini 2.0 and stable fallbacks.
+ */
 export async function analyzeResume(text: string, apiKey: string, jobDescription?: string): Promise<AnalysisResult> {
-  // Use the most stable models first for production/hosting environments
-  const modelNames = [
-    "gemini-1.5-flash",
-    "gemini-1.5-pro",
-    "gemini-1.5-flash-latest"
-  ];
-
   const prompt = `
-    Analyze the following resume text as if you were an expert ATS (Applicant Tracking System) and Career Coach.
+    Analyze this resume text as an expert ATS and Career Coach.
     
-    Resume Text:
-    "${text.substring(0, 15000)}"
+    Resume: "${text.substring(0, 15000).replace(/"/g, "'")}"
+    ${jobDescription ? `Match against: "${jobDescription.substring(0, 5000).replace(/"/g, "'")}"` : ""}
 
-    ${jobDescription ? `Job Description to match against: "${jobDescription.substring(0, 5000)}"` : ""}
-
-    Return ONLY a valid JSON object with the following structure:
+    Return ONLY a valid JSON object.
     {
-      "detectedRole": "Primary profession detected",
+      "detectedRole": "Professional role",
       "matchPercentage": 75,
-      "categoryScores": [
-        { "name": "Technical Skills", "score": 80 },
-        { "name": "Experience Impact", "score": 65 },
-        { "name": "Education", "score": 90 },
-        { "name": "Formatting", "score": 70 }
-      ],
-      "missingSkills": ["List of keywords/skills that should be there for this role"],
-      "jobRecommendations": ["3-5 Best job titles this person should apply for"],
-      "projectIdeas": ["2-3 specific project ideas to boost this specific profile"],
-      "writingIssues": [
-        { "issue": "Specific spelling/grammar error found", "suggestion": "How to fix it" }
-      ],
-      "missingPortions": ["Sections or info missing like 'Summary', 'Portfolio Link', 'Certifications'"],
-      "suggestions": ["General career advice"],
-      "interviewQuestions": [
-        { "question": "A challenging technical or behavioral question", "rationale": "Why this question is being asked based on their gaps" }
-      ]
-      ${jobDescription ? `, "jdMatchScore": 85, "jdAnalysis": "Detailed explanation of how well the resume matches the specific job description provided, highlighting strengths and specific keyword gaps."` : ""}
+      "categoryScores": [{ "name": "Technical Skills", "score": 80 }, { "name": "Experience Impact", "score": 65 }, { "name": "Education", "score": 90 }, { "name": "Formatting", "score": 70 }],
+      "missingSkills": ["skill1", "skill2"],
+      "jobRecommendations": ["job1", "job2"],
+      "projectIdeas": ["idea1", "idea2"],
+      "writingIssues": [{ "issue": "...", "suggestion": "..." }],
+      "missingPortions": ["link", "summary"],
+      "suggestions": ["advice1"],
+      "interviewQuestions": [{ "question": "...", "rationale": "..." }]
+      ${jobDescription ? `, "jdMatchScore": 85, "jdAnalysis": "Match analysis"` : ""}
     }
   `;
 
-  const genAI = new GoogleGenerativeAI(apiKey);
+  // 2026 Model Strategy
+  const configs = [
+    { name: "gemini-2.0-flash", version: "v1" },
+    { name: "gemini-2.0-flash-lite-preview", version: "v1beta" },
+    { name: "gemini-2.0-flash-latest", version: "v1" },
+    { name: "gemini-pro", version: "v1" }
+  ];
 
-  for (const modelName of modelNames) {
+  for (const config of configs) {
     try {
-      const model = genAI.getGenerativeModel({ model: modelName });
-      const result = await model.generateContent(prompt);
-      const res = await result.response;
-      const jsonText = res.text().replace(/^```json\n|\n```$/g, "").trim();
+      console.log(`Attempting analysis with ${config.name} (${config.version})...`);
+      const restUrl = `https://generativelanguage.googleapis.com/${config.version}/models/${config.name}:generateContent?key=${apiKey}`;
 
-      // Basic validation that we got JSON
-      if (jsonText.startsWith('{') && jsonText.endsWith('}')) {
-        return JSON.parse(jsonText);
+      const response = await fetch(restUrl, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        const textOutput = data.candidates?.[0]?.content?.parts?.[0]?.text;
+        if (!textOutput) continue;
+        const cleaned = textOutput.replace(/^```json\n|\n```$|^```\n|\n```$/g, "").trim();
+        return JSON.parse(cleaned);
+      } else {
+        const errData = await response.json().catch(() => ({}));
+        const errMsg = errData.error?.message || response.statusText;
+        console.warn(`${config.name} failed:`, errMsg);
+        if (response.status === 429 || response.status === 404) continue;
+        if (response.status === 403) throw new Error("API Key verification failed.");
       }
     } catch (e: any) {
-      console.warn(`Model ${modelName} failed:`, e.message);
-      // If unauthorized, don't keep trying other models
-      if (e.message?.includes('API_KEY_INVALID') || e.message?.includes('403')) {
-        throw new Error("Invalid API Key. Please check your Gemini API key.");
-      }
+      if (e.message?.includes("API Key")) throw e;
+      console.error(`Error with ${config.name}:`, e.message);
     }
   }
 
-  // Fallback REST API with a hardcoded stable endpoint
-  try {
-    const restUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
-    const restRes = await fetch(restUrl, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        contents: [{ parts: [{ text: prompt }] }]
-      })
-    });
-
-    if (restRes.ok) {
-      const data = await restRes.json();
-      const textOutput = data.candidates[0].content.parts[0].text;
-      const cleaned = textOutput.replace(/^```json\n|\n```$/g, "").trim();
-      return JSON.parse(cleaned);
-    } else {
-      const errData = await restRes.json();
-      throw new Error(errData.error?.message || "API request failed");
-    }
-  } catch (e: any) {
-    console.error("Analysis Error:", e.message);
-    throw new Error(e.message || "Connection failed. Please check your internet and API key.");
-  }
+  throw new Error("AI Analysis reached rate limits. Please try again in 30 seconds.");
 }
