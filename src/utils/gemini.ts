@@ -77,7 +77,7 @@ export async function analyzeResume(text: string, apiKey: string): Promise<Analy
   // Fallback REST API
   console.log("SDK failed, attempting direct REST API call...");
   try {
-    const restUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
+    const restUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
     const restRes = await fetch(restUrl, {
       method: "POST",
       headers: { "Content-Type": "application/json" },

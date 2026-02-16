@@ -6,7 +6,7 @@ import Uploader from './Uploader';
 import ResultsDashboard from './ResultsDashboard';
 import { extractTextFromPDF } from '@/utils/pdfParser';
 import { analyzeResume, AnalysisResult } from '@/utils/gemini';
-import { KeyRound, ArrowLeft, Cpu, Sun, Moon, Sparkles } from 'lucide-react';
+import { ArrowLeft, Cpu, Sun, Moon } from 'lucide-react';
 import styles from './ResumeAnalyzer.module.css';
 
 export default function ResumeAnalyzer() {
@@ -41,7 +41,7 @@ export default function ResumeAnalyzer() {
 
     const handleFileProcess = async (file: File) => {
         if (!apiKey) {
-            setError("Please enter your API Key first.");
+            setError("API Key not found. Please set NEXT_PUBLIC_GEMINI_API_KEY in your environment.");
             return;
         }
 
@@ -83,14 +83,7 @@ export default function ResumeAnalyzer() {
                         {theme === 'dark' ? <Sun size={20} /> : <Moon size={20} />}
                     </button>
 
-                    {!process.env.NEXT_PUBLIC_GEMINI_API_KEY && !analysisResult && (
-                        <div className={styles.apiKeyContainer}>
-                            <KeyRound size={18} className="text-indigo-400" />
-                            
-                        </div>
-                    )}
-
-                    {process.env.NEXT_PUBLIC_GEMINI_API_KEY && !analysisResult && (
+                    {!analysisResult && (
                         <div className={styles.systemBadge}>
                             <Cpu size={14} />
                             AI Engine Ready
