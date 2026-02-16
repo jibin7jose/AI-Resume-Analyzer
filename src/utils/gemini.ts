@@ -1,6 +1,4 @@
 
-import { GoogleGenerativeAI } from "@google/generative-ai";
-
 export interface CategoryScore {
   name: string;
   score: number;
@@ -32,69 +30,81 @@ export interface AnalysisResult {
 }
 
 /**
- * Robust resume analysis using Google's Gemini AI.
- * Updated for Feb 2026 compatibility: Uses Gemini 2.0 and stable fallbacks.
+ * Extremely resilient resume analysis.
+ * Uses a double-loop strategy (Model + API Version) to bypass regional 404s and 429 quota caps.
  */
 export async function analyzeResume(text: string, apiKey: string, jobDescription?: string): Promise<AnalysisResult> {
   const prompt = `
-    Analyze this resume text as an expert ATS and Career Coach.
-    
-    Resume: "${text.substring(0, 15000).replace(/"/g, "'")}"
-    ${jobDescription ? `Match against: "${jobDescription.substring(0, 5000).replace(/"/g, "'")}"` : ""}
+    Resume content: "${text.substring(0, 10000).replace(/"/g, "'")}"
+    ${jobDescription ? `Job Description: "${jobDescription.substring(0, 3000).replace(/"/g, "'")}"` : ""}
 
-    Return ONLY a valid JSON object.
+    Act as a senior technical recruiter. Analyze the resume.
+    Return ONLY a valid JSON object:
     {
-      "detectedRole": "Professional role",
-      "matchPercentage": 75,
-      "categoryScores": [{ "name": "Technical Skills", "score": 80 }, { "name": "Experience Impact", "score": 65 }, { "name": "Education", "score": 90 }, { "name": "Formatting", "score": 70 }],
-      "missingSkills": ["skill1", "skill2"],
-      "jobRecommendations": ["job1", "job2"],
-      "projectIdeas": ["idea1", "idea2"],
-      "writingIssues": [{ "issue": "...", "suggestion": "..." }],
-      "missingPortions": ["link", "summary"],
-      "suggestions": ["advice1"],
-      "interviewQuestions": [{ "question": "...", "rationale": "..." }]
-      ${jobDescription ? `, "jdMatchScore": 85, "jdAnalysis": "Match analysis"` : ""}
+      "detectedRole": "...",
+      "matchPercentage": 0-100,
+      "categoryScores": [{"name": "Technical", "score": 0-100}, {"name": "Experience", "score": 0-100}, {"name": "Education", "score": 0-100}, {"name": "Formatting", "score": 0-100}],
+      "missingSkills": [],
+      "jobRecommendations": [],
+      "projectIdeas": [],
+      "writingIssues": [{"issue": "...", "suggestion": "..."}],
+      "missingPortions": [],
+      "suggestions": [],
+      "interviewQuestions": [{"question": "...", "rationale": "..."}]
+      ${jobDescription ? `, "jdMatchScore": 0-100, "jdAnalysis": "..."` : ""}
     }
   `;
 
-  // 2026 Model Strategy
-  const configs = [
-    { name: "gemini-2.0-flash", version: "v1" },
-    { name: "gemini-2.0-flash-lite-preview", version: "v1beta" },
-    { name: "gemini-2.0-flash-latest", version: "v1" },
-    { name: "gemini-pro", version: "v1" }
+  // 2026-Ready model grid: Prioritizing 2.5 series found in the API discovery
+  const models = [
+    "gemini-2.5-flash",
+    "gemini-2.5-pro",
+    "gemini-2.0-flash",
+    "gemini-2.0-flash-001",
+    "gemini-1.5-flash",
+    "gemini-1.5-pro",
+    "gemini-pro"
   ];
 
-  for (const config of configs) {
-    try {
-      console.log(`Attempting analysis with ${config.name} (${config.version})...`);
-      const restUrl = `https://generativelanguage.googleapis.com/${config.version}/models/${config.name}:generateContent?key=${apiKey}`;
+  // Iterative strategy: Try each version of each model
+  for (const modelName of models) {
+    const versions = ["v1", "v1beta"];
 
-      const response = await fetch(restUrl, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
-      });
+    for (const version of versions) {
+      try {
+        console.log(`Checking ${modelName} (${version})...`);
+        const restUrl = `https://generativelanguage.googleapis.com/${version}/models/${modelName}:generateContent?key=${apiKey}`;
 
-      if (response.ok) {
-        const data = await response.json();
-        const textOutput = data.candidates?.[0]?.content?.parts?.[0]?.text;
-        if (!textOutput) continue;
-        const cleaned = textOutput.replace(/^```json\n|\n```$|^```\n|\n```$/g, "").trim();
-        return JSON.parse(cleaned);
-      } else {
-        const errData = await response.json().catch(() => ({}));
-        const errMsg = errData.error?.message || response.statusText;
-        console.warn(`${config.name} failed:`, errMsg);
-        if (response.status === 429 || response.status === 404) continue;
-        if (response.status === 403) throw new Error("API Key verification failed.");
+        const response = await fetch(restUrl, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          const textOutput = data.candidates?.[0]?.content?.parts?.[0]?.text;
+          if (!textOutput) continue;
+
+          const cleaned = textOutput.replace(/^```json\n|\n```$|^```\n|\n```$/g, "").trim();
+          return JSON.parse(cleaned);
+        } else {
+          const errData = await response.json().catch(() => ({}));
+          const errMsg = errData.error?.message || response.statusText;
+
+          console.warn(`${modelName} (${version}) failed:`, errMsg);
+
+          if (response.status === 403 && errMsg.includes("API Key")) {
+            throw new Error("Invalid API Key. Please check your credentials.");
+          }
+          continue;
+        }
+      } catch (e: any) {
+        if (e.message?.includes("API Key")) throw e;
+        console.error(`Error with ${modelName}:`, e.message);
       }
-    } catch (e: any) {
-      if (e.message?.includes("API Key")) throw e;
-      console.error(`Error with ${config.name}:`, e.message);
     }
   }
 
-  throw new Error("AI Analysis reached rate limits. Please try again in 30 seconds.");
+  throw new Error("AI capacity reached or region mismatch. Please try again in 1 minute.");
 }
