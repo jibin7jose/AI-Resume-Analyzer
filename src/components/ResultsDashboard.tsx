@@ -8,8 +8,8 @@ import {
 } from 'recharts';
 import {
     AlertCircle, Lightbulb, UserCheck, Activity,
-    Target, ShieldCheck, Briefcase, Search,
-    FileWarning, CheckCircle2, FlaskConical, GraduationCap
+    Search, FileWarning, CheckCircle2, FlaskConical,
+    GraduationCap, HelpCircle, MessageCircle
 } from 'lucide-react';
 import styles from './ResultsDashboard.module.css';
 
@@ -21,7 +21,7 @@ export default function ResultsDashboard({ data }: DashboardProps) {
     const {
         matchPercentage, categoryScores, missingSkills, suggestions,
         detectedRole, jobRecommendations, projectIdeas,
-        writingIssues, missingPortions
+        writingIssues, missingPortions, interviewQuestions
     } = data;
 
     const pieData = [
@@ -109,62 +109,32 @@ export default function ResultsDashboard({ data }: DashboardProps) {
                 </div>
             </div>
 
-            {/* 3. Writing Issues (Grammar/Spelling) */}
-            <div className={styles.card}>
+            {/* 3. Interview Prep (NEW) */}
+            <div className={`${styles.card} ${styles.colSpan2}`}>
                 <div className={styles.cardHeader}>
                     <div className={styles.cardTitle}>
-                        <FileWarning className={`${styles.icon} ${styles.iconRed}`} />
-                        Writing Issues
+                        <MessageCircle className={`${styles.icon} ${styles.iconBlue}`} />
+                        Interview Prep Guide
                     </div>
                 </div>
                 <div className={styles.list}>
-                    {writingIssues?.map((issue, i) => (
+                    {interviewQuestions?.map((item, i) => (
                         <div key={i} className={styles.listItem}>
                             <div className={styles.issueText}>
-                                <span className={styles.issueLabel}>Issue: {issue.issue}</span>
-                                <span className={styles.correctionLabel}>Suggestion: {issue.suggestion}</span>
+                                <span className="font-bold text-indigo-400 text-sm">Q: {item.question}</span>
+                                <span className="text-xs text-slate-400 mt-1 italic">Rationale: {item.rationale}</span>
                             </div>
                         </div>
                     ))}
-                    {!writingIssues?.length && (
-                        <div className={styles.listItem}>
-                            <CheckCircle2 className={`${styles.icon} ${styles.iconGreen}`} />
-                            <span>No major writing issues found!</span>
-                        </div>
-                    )}
                 </div>
             </div>
 
-            {/* 4. Missing Portions */}
-            <div className={styles.card}>
-                <div className={styles.cardHeader}>
-                    <div className={styles.cardTitle}>
-                        <Search className={`${styles.icon} ${styles.iconYellow}`} />
-                        Missing Items
-                    </div>
-                </div>
-                <div className={styles.list}>
-                    {missingPortions?.map((item, i) => (
-                        <div key={i} className={styles.listItem}>
-                            <AlertCircle className="w-4 h-4 text-amber-500" />
-                            <span>Missing: {item}</span>
-                        </div>
-                    ))}
-                    {!missingPortions?.length && (
-                        <div className={styles.listItem}>
-                            <CheckCircle2 className={`${styles.icon} ${styles.iconGreen}`} />
-                            <span>All resume sections appear complete.</span>
-                        </div>
-                    )}
-                </div>
-            </div>
-
-            {/* 5. Project Ideas */}
+            {/* 4. Project Ideas */}
             <div className={styles.card}>
                 <div className={styles.cardHeader}>
                     <div className={styles.cardTitle}>
                         <FlaskConical className={`${styles.icon} ${styles.iconBlue}`} />
-                        Project Ideas
+                        Portfolio Boosters
                     </div>
                 </div>
                 <div className={styles.list}>
@@ -177,7 +147,51 @@ export default function ResultsDashboard({ data }: DashboardProps) {
                 </div>
             </div>
 
-            {/* 6. Skills and Suggestions (Wide) */}
+            {/* 5. Writing Issues */}
+            <div className={styles.card}>
+                <div className={styles.cardHeader}>
+                    <div className={styles.cardTitle}>
+                        <FileWarning className={`${styles.icon} ${styles.iconRed}`} />
+                        Format Cleanup
+                    </div>
+                </div>
+                <div className={styles.list}>
+                    {writingIssues?.map((issue, i) => (
+                        <div key={i} className={styles.listItem}>
+                            <div className={styles.issueText}>
+                                <span className={styles.issueLabel}>Issue: {issue.issue}</span>
+                                <span className={styles.correctionLabel}>Fix: {issue.suggestion}</span>
+                            </div>
+                        </div>
+                    ))}
+                    {!writingIssues?.length && (
+                        <div className={styles.listItem}>
+                            <CheckCircle2 className={`${styles.icon} ${styles.iconGreen}`} />
+                            <span>No major writing issues found!</span>
+                        </div>
+                    )}
+                </div>
+            </div>
+
+            {/* 6. Missing Items */}
+            <div className={styles.card}>
+                <div className={styles.cardHeader}>
+                    <div className={styles.cardTitle}>
+                        <Search className={`${styles.icon} ${styles.iconYellow}`} />
+                        Gap Analysis
+                    </div>
+                </div>
+                <div className={styles.list}>
+                    {missingPortions?.map((item, i) => (
+                        <div key={i} className={styles.listItem}>
+                            <AlertCircle className="w-4 h-4 text-amber-500" />
+                            <span>{item}</span>
+                        </div>
+                    ))}
+                </div>
+            </div>
+
+            {/* 7. Strategic Roadmap */}
             <div className={`${styles.card} ${styles.colSpan3}`}>
                 <div className={styles.cardHeader}>
                     <div className={styles.cardTitle}>

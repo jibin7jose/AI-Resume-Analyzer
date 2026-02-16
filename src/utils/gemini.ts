@@ -11,6 +11,11 @@ export interface WritingIssue {
   suggestion: string;
 }
 
+export interface InterviewQuestion {
+  question: string;
+  rationale: string;
+}
+
 export interface AnalysisResult {
   detectedRole: string;
   matchPercentage: number;
@@ -21,6 +26,7 @@ export interface AnalysisResult {
   writingIssues: WritingIssue[];
   missingPortions: string[];
   suggestions: string[];
+  interviewQuestions: InterviewQuestion[];
 }
 
 export async function analyzeResume(text: string, apiKey: string): Promise<AnalysisResult> {
@@ -44,19 +50,21 @@ export async function analyzeResume(text: string, apiKey: string): Promise<Analy
       "jobRecommendations": ["3-5 Best job titles this person should apply for"],
       "projectIdeas": ["2-3 specific project ideas to boost this specific profile"],
       "writingIssues": [
-        { "issue": "Specific spelling/grammar error or weak phrasing found", "suggestion": "How to fix it" }
+        { "issue": "Specific spelling/grammar error found", "suggestion": "How to fix it" }
       ],
       "missingPortions": ["Sections or info missing like 'Summary', 'Portfolio Link', 'Certifications'"],
-      "suggestions": ["General career advice based on the profile"]
+      "suggestions": ["General career advice"],
+      "interviewQuestions": [
+        { "question": "A challenging technical or behavioral question", "rationale": "Why this question is being asked based on their gaps" }
+      ]
     }
   `;
 
-  // 2026 Preferred Models
   const models = [
     "gemini-2.5-flash",
     "gemini-flash-latest",
     "gemini-2.0-flash",
-    "gemini-2.5-pro"
+    "gemini-1.5-flash"
   ];
 
   const genAI = new GoogleGenerativeAI(apiKey);
@@ -75,7 +83,6 @@ export async function analyzeResume(text: string, apiKey: string): Promise<Analy
   }
 
   // Fallback REST API
-  console.log("SDK failed, attempting direct REST API call...");
   try {
     const restUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
     const restRes = await fetch(restUrl, {
