@@ -44,6 +44,7 @@ export default function Uploader({ onFileProcess, isProcessing, error }: Uploade
     };
 
     const processFile = (file: File) => {
+        if (isProcessing) return;
         if (file.type !== 'application/pdf') {
             alert('Please upload a PDF file.');
             return;

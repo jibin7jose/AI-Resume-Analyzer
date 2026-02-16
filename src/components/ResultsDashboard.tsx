@@ -19,7 +19,9 @@ export default function ResultsDashboard({ data }: DashboardProps) {
     const [mounted, setMounted] = useState(false);
 
     useEffect(() => {
-        setMounted(true);
+        // Delay mounting for Recharts to ensure layout is ready
+        const timer = setTimeout(() => setMounted(true), 100);
+        return () => clearTimeout(timer);
     }, []);
 
     const {
@@ -69,14 +71,14 @@ export default function ResultsDashboard({ data }: DashboardProps) {
 
                 <div className={styles.overviewContainer}>
                     <div className={styles.chartWrapper}>
-                        <ResponsiveContainer width="100%" height="100%">
+                        <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
                             <PieChart>
                                 <Pie
                                     data={pieData}
                                     cx="50%"
                                     cy="50%"
-                                    innerRadius={65}
-                                    outerRadius={85}
+                                    innerRadius={55}
+                                    outerRadius={75}
                                     startAngle={180}
                                     endAngle={0}
                                     paddingAngle={5}
@@ -118,8 +120,8 @@ export default function ResultsDashboard({ data }: DashboardProps) {
                     </div>
                 </div>
                 <div className={styles.radarWrapper}>
-                    <ResponsiveContainer width="100%" height="100%">
-                        <RadarChart cx="50%" cy="50%" outerRadius="75%" data={categoryScores}>
+                    <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
+                        <RadarChart cx="50%" cy="50%" outerRadius="65%" data={categoryScores}>
                             <PolarGrid stroke="var(--glass-border)" />
                             <PolarAngleAxis dataKey="name" tick={{ fill: 'var(--text-muted)', fontSize: 10 }} />
                             <PolarRadiusAxis domain={[0, 100]} tick={false} axisLine={false} />
