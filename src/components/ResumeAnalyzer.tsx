@@ -86,13 +86,7 @@ export default function ResumeAnalyzer() {
                     {!process.env.NEXT_PUBLIC_GEMINI_API_KEY && !analysisResult && (
                         <div className={styles.apiKeyContainer}>
                             <KeyRound size={18} className="text-indigo-400" />
-                            <input
-                                type="password"
-                                placeholder="Connect API Key"
-                                value={apiKey}
-                                onChange={(e) => setApiKey(e.target.value)}
-                                className={styles.keyInput}
-                            />
+                            
                         </div>
                     )}
 
