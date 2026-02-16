@@ -75,7 +75,7 @@ export default function Uploader({ onFileProcess, isProcessing, error }: Uploade
                         ) : fileName ? (
                             <FileText className="w-10 h-10" />
                         ) : (
-                            <img src="/logo.jpg" alt="Logo" className={styles.uploaderLogo} />
+                            <UploadCloud className="w-10 h-10" />
                         )}
                     </div>
 
@@ -97,6 +97,10 @@ export default function Uploader({ onFileProcess, isProcessing, error }: Uploade
                             <>
                                 <h3 className={styles.title}>Drop your resume here</h3>
                                 <p className={styles.subtitle}>Support for PDF files only. Max 5MB.</p>
+                                <div className={styles.uploadButton}>
+                                    <UploadCloud size={16} />
+                                    Choose PDF File
+                                </div>
                                 <div className={styles.footer}>Powered by Advanced AI Intelligence</div>
                             </>
                         )}
