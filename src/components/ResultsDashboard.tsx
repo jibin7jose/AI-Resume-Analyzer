@@ -9,7 +9,7 @@ import {
 import {
     AlertCircle, Lightbulb, UserCheck, Activity,
     Search, FileWarning, CheckCircle2, FlaskConical,
-    GraduationCap, HelpCircle, MessageCircle
+    GraduationCap, HelpCircle, MessageCircle, Target
 } from 'lucide-react';
 import styles from './ResultsDashboard.module.css';
 
@@ -21,7 +21,8 @@ export default function ResultsDashboard({ data }: DashboardProps) {
     const {
         matchPercentage, categoryScores, missingSkills, suggestions,
         detectedRole, jobRecommendations, projectIdeas,
-        writingIssues, missingPortions, interviewQuestions
+        writingIssues, missingPortions, interviewQuestions,
+        jdMatchScore, jdAnalysis
     } = data;
 
     const pieData = [
@@ -31,6 +32,26 @@ export default function ResultsDashboard({ data }: DashboardProps) {
 
     return (
         <div className={styles.dashboard}>
+            {/* 0. Target JD Match (Conditional) */}
+            {jdAnalysis && (
+                <div className={`${styles.card} ${styles.colSpan3} ${styles.jdCard}`}>
+                    <div className={styles.cardHeader}>
+                        <div className={styles.cardTitle}>
+                            <Target className={`${styles.icon} ${styles.iconPink}`} />
+                            Target Job Match Analysis
+                        </div>
+                        {jdMatchScore !== undefined && (
+                            <div className={styles.jdBadge}>
+                                {jdMatchScore}% Fit
+                            </div>
+                        )}
+                    </div>
+                    <div className={styles.jdBody}>
+                        <p className={styles.jdDescription}>{jdAnalysis}</p>
+                    </div>
+                </div>
+            )}
+
             {/* 1. Main Role Overview */}
             <div className={`${styles.card} ${styles.colSpan2}`}>
                 <div className={styles.cardHeader}>

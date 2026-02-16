@@ -27,14 +27,18 @@ export interface AnalysisResult {
   missingPortions: string[];
   suggestions: string[];
   interviewQuestions: InterviewQuestion[];
+  jdMatchScore?: number;
+  jdAnalysis?: string;
 }
 
-export async function analyzeResume(text: string, apiKey: string): Promise<AnalysisResult> {
+export async function analyzeResume(text: string, apiKey: string, jobDescription?: string): Promise<AnalysisResult> {
   const prompt = `
     Analyze the following resume text as if you were an expert ATS (Applicant Tracking System) and Career Coach.
     
     Resume Text:
     "${text.substring(0, 15000)}"
+
+    ${jobDescription ? `Job Description to match against: "${jobDescription.substring(0, 5000)}"` : ""}
 
     Return ONLY a valid JSON object with the following structure:
     {
@@ -57,6 +61,7 @@ export async function analyzeResume(text: string, apiKey: string): Promise<Analy
       "interviewQuestions": [
         { "question": "A challenging technical or behavioral question", "rationale": "Why this question is being asked based on their gaps" }
       ]
+      ${jobDescription ? `, "jdMatchScore": 85, "jdAnalysis": "Detailed explanation of how well the resume matches the specific job description provided, highlighting strengths and specific keyword gaps."` : ""}
     }
   `;
 

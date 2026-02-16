@@ -6,15 +6,17 @@ import Uploader from './Uploader';
 import ResultsDashboard from './ResultsDashboard';
 import { extractTextFromPDF } from '@/utils/pdfParser';
 import { analyzeResume, AnalysisResult } from '@/utils/gemini';
-import { ArrowLeft, Cpu, Sun, Moon } from 'lucide-react';
+import { KeyRound, ArrowLeft, Cpu, Sun, Moon, Briefcase, FileText } from 'lucide-react';
 import styles from './ResumeAnalyzer.module.css';
 
 export default function ResumeAnalyzer() {
     const [apiKey, setApiKey] = useState<string>('');
+    const [jobDescription, setJobDescription] = useState<string>('');
     const [isAnalyzing, setIsAnalyzing] = useState(false);
     const [analysisResult, setAnalysisResult] = useState<AnalysisResult | null>(null);
     const [error, setError] = useState<string | null>(null);
     const [theme, setTheme] = useState<'light' | 'dark'>('dark');
+    const [showJDInput, setShowJDInput] = useState(false);
 
     useEffect(() => {
         const envKey = process.env.NEXT_PUBLIC_GEMINI_API_KEY;
@@ -22,7 +24,6 @@ export default function ResumeAnalyzer() {
             setApiKey(envKey);
         }
 
-        // Initialize theme from localStorage
         const savedTheme = localStorage.getItem('theme') as 'light' | 'dark' | null;
         if (savedTheme) {
             setTheme(savedTheme);
@@ -40,8 +41,9 @@ export default function ResumeAnalyzer() {
     };
 
     const handleFileProcess = async (file: File) => {
-        if (!apiKey) {
-            setError("API Key not found. Please set NEXT_PUBLIC_GEMINI_API_KEY in your environment.");
+        const targetApiKey = process.env.NEXT_PUBLIC_GEMINI_API_KEY || apiKey;
+        if (!targetApiKey) {
+            setError("Please enter your API Key first.");
             return;
         }
 
@@ -50,7 +52,7 @@ export default function ResumeAnalyzer() {
 
         try {
             const text = await extractTextFromPDF(file);
-            const result = await analyzeResume(text, apiKey);
+            const result = await analyzeResume(text, targetApiKey, jobDescription);
             setAnalysisResult(result);
         } catch (err: any) {
             console.error(err);
@@ -62,13 +64,11 @@ export default function ResumeAnalyzer() {
 
     return (
         <div className={styles.container}>
-            {/* Background Decorative Blobs */}
             <div className="fixed inset-0 overflow-hidden -z-10 pointer-events-none opacity-50">
                 <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] rounded-full bg-indigo-500/10 blur-[100px] animate-pulse" />
                 <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] rounded-full bg-rose-500/10 blur-[100px] animate-pulse" />
             </div>
 
-            {/* Navigation / Header */}
             <header className={styles.header}>
                 <div className={styles.titleContainer}>
                     <div className="flex items-center gap-4 mb-2">
@@ -83,21 +83,36 @@ export default function ResumeAnalyzer() {
                         {theme === 'dark' ? <Sun size={20} /> : <Moon size={20} />}
                     </button>
 
+                    {!process.env.NEXT_PUBLIC_GEMINI_API_KEY && !analysisResult && (
+                        <div className={styles.apiKeyContainer}>
+                            <KeyRound size={16} className="text-indigo-400" />
+                            <input
+                                type="password"
+                                placeholder="Enter API Key"
+                                value={apiKey}
+                                onChange={(e) => setApiKey(e.target.value)}
+                                className={styles.keyInput}
+                            />
+                        </div>
+                    )}
+
                     {!analysisResult && (
                         <div className={styles.systemBadge}>
                             <Cpu size={14} />
-                            AI Engine Ready
+                            AI Ready
                         </div>
                     )}
                 </div>
             </header>
 
-            {/* Main Application Area */}
             <main className={styles.main}>
                 {analysisResult ? (
                     <div className={styles.resultsContainer}>
                         <button
-                            onClick={() => setAnalysisResult(null)}
+                            onClick={() => {
+                                setAnalysisResult(null);
+                                setJobDescription('');
+                            }}
                             className={styles.backButton}
                         >
                             <ArrowLeft size={18} /> New Deep Scan
@@ -105,15 +120,41 @@ export default function ResumeAnalyzer() {
                         <ResultsDashboard data={analysisResult} />
                     </div>
                 ) : (
-                    <Uploader
-                        onFileProcess={handleFileProcess}
-                        isProcessing={isAnalyzing}
-                        error={error}
-                    />
+                    <div className="w-full max-w-2xl">
+                        {/* JD Toggle/Input */}
+                        <div className={styles.jdWrapper}>
+                            <button
+                                onClick={() => setShowJDInput(!showJDInput)}
+                                className={`${styles.jdToggleButton} ${showJDInput ? styles.active : ''}`}
+                            >
+                                <Briefcase size={16} />
+                                {showJDInput ? 'Remove Job Description' : 'Match Against Job Description (Optional)'}
+                            </button>
+
+                            {showJDInput && (
+                                <div className={styles.jdInputContainer}>
+                                    <textarea
+                                        placeholder="Paste the job requirements or description here to get a precision match score..."
+                                        value={jobDescription}
+                                        onChange={(e) => setJobDescription(e.target.value)}
+                                        className={styles.jdTextarea}
+                                    />
+                                    <div className={styles.jdHint}>
+                                        AI will calculate your specific fit for this role.
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+
+                        <Uploader
+                            onFileProcess={handleFileProcess}
+                            isProcessing={isAnalyzing}
+                            error={error}
+                        />
+                    </div>
                 )}
             </main>
 
-            {/* Footer with Copyright */}
             <footer className={styles.footer}>
                 <p className={styles.copyright}>
                     © {new Date().getFullYear()} AI Resume Analyzer. All rights reserved.

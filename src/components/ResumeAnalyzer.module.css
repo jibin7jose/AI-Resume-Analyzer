@@ -90,6 +90,38 @@
     transform: rotate(20deg) scale(1.1);
 }
 
+.apiKeyContainer {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    background: var(--glass-bg);
+    padding: 0.6rem 1.25rem;
+    border-radius: 9999px;
+    border: 1px solid var(--glass-border);
+    backdrop-filter: blur(20px);
+    transition: all 0.3s ease;
+}
+
+.apiKeyContainer:focus-within {
+    border-color: var(--primary);
+    background: var(--primary-glow);
+    box-shadow: 0 0 15px var(--primary-glow);
+}
+
+.keyInput {
+    background: transparent;
+    border: none;
+    outline: none;
+    font-size: 0.9rem;
+    color: var(--foreground);
+    width: 200px;
+    font-family: inherit;
+}
+
+.keyInput::placeholder {
+    color: var(--text-muted);
+}
+
 .systemBadge {
     font-size: 0.75rem;
     font-weight: 600;
@@ -102,6 +134,87 @@
     align-items: center;
     gap: 0.6rem;
     box-shadow: 0 4px 12px var(--primary-glow);
+}
+
+.jdWrapper {
+    width: 100%;
+    margin-bottom: 2rem;
+    animation: fadeIn 0.4s ease-out;
+}
+
+.jdToggleButton {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    padding: 1rem;
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-border);
+    border-radius: 16px;
+    color: var(--text-muted);
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    backdrop-filter: blur(10px);
+}
+
+.jdToggleButton:hover,
+.jdToggleButton.active {
+    background: var(--primary-glow);
+    border-color: var(--primary);
+    color: var(--primary);
+}
+
+.jdInputContainer {
+    margin-top: 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    animation: slideDown 0.3s ease-out;
+}
+
+.jdTextarea {
+    width: 100%;
+    min-height: 150px;
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-border);
+    border-radius: 16px;
+    padding: 1rem;
+    color: var(--foreground);
+    font-family: inherit;
+    font-size: 0.9rem;
+    line-height: 1.6;
+    outline: none;
+    resize: vertical;
+    transition: all 0.3s ease;
+    backdrop-filter: blur(20px);
+}
+
+.jdTextarea:focus {
+    border-color: var(--primary);
+    background: rgba(99, 102, 241, 0.05);
+}
+
+.jdHint {
+    padding-left: 0.5rem;
+    font-size: 0.75rem;
+    color: var(--primary);
+    font-weight: 500;
+    opacity: 0.8;
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 .main {
