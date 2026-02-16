@@ -6,11 +6,10 @@ import Uploader from './Uploader';
 import ResultsDashboard from './ResultsDashboard';
 import { extractTextFromPDF } from '@/utils/pdfParser';
 import { analyzeResume, AnalysisResult } from '@/utils/gemini';
-import { KeyRound, ArrowLeft, Cpu, Sun, Moon, Briefcase, FileText } from 'lucide-react';
+import { ArrowLeft, Cpu, Sun, Moon, Briefcase, FileText } from 'lucide-react';
 import styles from './ResumeAnalyzer.module.css';
 
 export default function ResumeAnalyzer() {
-    const [apiKey, setApiKey] = useState<string>('');
     const [jobDescription, setJobDescription] = useState<string>('');
     const [isAnalyzing, setIsAnalyzing] = useState(false);
     const [analysisResult, setAnalysisResult] = useState<AnalysisResult | null>(null);
@@ -19,10 +18,6 @@ export default function ResumeAnalyzer() {
     const [showJDInput, setShowJDInput] = useState(false);
 
     useEffect(() => {
-        const envKey = process.env.NEXT_PUBLIC_GEMINI_API_KEY;
-        if (envKey) {
-            setApiKey(envKey);
-        }
 
         const savedTheme = localStorage.getItem('theme') as 'light' | 'dark' | null;
         if (savedTheme) {
@@ -41,9 +36,9 @@ export default function ResumeAnalyzer() {
     };
 
     const handleFileProcess = async (file: File) => {
-        const targetApiKey = process.env.NEXT_PUBLIC_GEMINI_API_KEY || apiKey;
+        const targetApiKey = process.env.NEXT_PUBLIC_GEMINI_API_KEY;
         if (!targetApiKey) {
-            setError("Please enter your API Key first.");
+            setError("AI system is currently offline (Missing Configuration).");
             return;
         }
 
@@ -83,19 +78,6 @@ export default function ResumeAnalyzer() {
                     <button onClick={toggleTheme} className={styles.themeToggle} aria-label="Toggle Theme">
                         {theme === 'dark' ? <Sun size={20} /> : <Moon size={20} />}
                     </button>
-
-                    {!process.env.NEXT_PUBLIC_GEMINI_API_KEY && !analysisResult && (
-                        <div className={styles.apiKeyContainer}>
-                            <KeyRound size={16} className="text-indigo-400" />
-                            <input
-                                type="password"
-                                placeholder="Enter API Key"
-                                value={apiKey}
-                                onChange={(e) => setApiKey(e.target.value)}
-                                className={styles.keyInput}
-                            />
-                        </div>
-                    )}
 
                     {!analysisResult && (
                         <div className={styles.systemBadge}>
